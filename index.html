@@ -2,34 +2,96 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>AI Chat Ultimate</title>
+<title>AI Chat Netlify</title>
 
 <style>
-body{margin:0;font-family:sans-serif;background:#0a0f1f;color:white;display:flex;height:100vh}
-.sidebar{width:240px;background:#0f172a;padding:10px}
-.chat{flex:1;display:flex;flex-direction:column}
-.header{padding:10px;background:#111827;text-align:center}
-#box{flex:1;overflow:auto;padding:15px}
-.msg{margin:10px;padding:10px;border-radius:10px;max-width:70%;white-space:pre-wrap}
-.user{background:#2563eb;margin-left:auto}
-.bot{background:#16a34a;margin-right:auto}
-.input{display:flex;padding:10px;background:#111827;gap:10px}
-input{flex:1;padding:12px;border-radius:8px;border:none}
-button{padding:10px;background:#7c3aed;color:white;border:none;border-radius:8px;cursor:pointer}
-.small{font-size:12px;opacity:0.7}
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:#0b1220;
+  color:white;
+  display:flex;
+  height:100vh;
+}
+
+.sidebar{
+  width:220px;
+  background:#0f172a;
+  padding:10px;
+}
+
+.chat{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.header{
+  padding:10px;
+  background:#111827;
+  text-align:center;
+}
+
+#box{
+  flex:1;
+  overflow:auto;
+  padding:15px;
+}
+
+.msg{
+  margin:10px;
+  padding:10px;
+  border-radius:10px;
+  max-width:70%;
+  white-space:pre-wrap;
+}
+
+.user{
+  background:#2563eb;
+  margin-left:auto;
+}
+
+.bot{
+  background:#16a34a;
+  margin-right:auto;
+}
+
+.input{
+  display:flex;
+  padding:10px;
+  background:#111827;
+  gap:10px;
+}
+
+input{
+  flex:1;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+}
+
+button{
+  padding:10px;
+  background:#7c3aed;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
 </style>
 
 </head>
+
 <body>
 
 <div class="sidebar">
-<h3>⚡ ULTIMATE AI</h3>
+<h3>⚡ Netlify AI</h3>
 <button onclick="clearChat()">پاک کردن</button>
-<p class="small">✔ Memory<br>✔ Streaming<br>✔ Secure API</p>
 </div>
 
 <div class="chat">
-<div class="header">🤖 AI CHAT ULTIMATE MODE</div>
+<div class="header">🤖 AI Chat (Netlify Version)</div>
+
 <div id="box"></div>
 
 <div class="input">
@@ -39,58 +101,62 @@ button{padding:10px;background:#7c3aed;color:white;border:none;border-radius:8px
 </div>
 
 <script>
-const API_URL = "https://YOUR-VERCEL-URL.vercel.app/api/chat";
-
-// memory system (smart trim)
-let messages = JSON.parse(localStorage.getItem("ultimate_chat")||"[]");
+let messages = JSON.parse(localStorage.getItem("chat") || "[]");
 
 function render(){
   const box=document.getElementById("box");
   box.innerHTML="";
   messages.forEach(m=>{
-    box.innerHTML+=<div class="msg "></div>;
+    box.innerHTML+=`<div class="msg ${m.role=='user'?'user':'bot'}">${m.content}</div>`;
   });
   box.scrollTop=box.scrollHeight;
 }
+
 render();
 
+// 🧠 fake AI logic (هوشمند ساده)
+function fakeAI(text){
+  text = text.toLowerCase();
+
+  if(text.includes("سلام")) return "سلام 👋 چطور می‌تونم کمکت کنم؟";
+  if(text.includes("اسم")) return "من یک AI ساده هستم 😄";
+  if(text.includes("خوبی")) return "من خوبم، تو چطوری؟";
+  if(text.includes("who") || text.includes("چی")) return "من یک چت‌بات ساده هستم که روی Netlify اجرا میشم ⚡";
+
+  return "متوجه شدم 👍 ولی برای پاسخ دقیق‌تر باید نسخه AI واقعی وصل بشه.";
+}
+
 async function send(){
-  let input=document.getElementById("txt");
+  const input=document.getElementById("txt");
   if(!input.value) return;
 
   messages.push({role:"user",content:input.value});
   render();
 
-  const text=input.value;
+  const userText = input.value;
   input.value="";
-
-  const res=await fetch(API_URL,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({messages})
-  });
-
-  const data=await res.json();
 
   let bot={role:"assistant",content:""};
   messages.push(bot);
 
+  let reply = fakeAI(userText);
+
   let i=0;
-  let stream=setInterval(()=>{
-    bot.content+=data.reply[i];
+  let interval=setInterval(()=>{
+    bot.content+=reply[i];
     i++;
     render();
 
-    if(i>=data.reply.length){
-      clearInterval(stream);
-      localStorage.setItem("ultimate_chat",JSON.stringify(messages.slice(-40)));
+    if(i>=reply.length){
+      clearInterval(interval);
+      localStorage.setItem("chat",JSON.stringify(messages));
     }
-  },5);
+  },15);
 }
 
 function clearChat(){
   messages=[];
-  localStorage.removeItem("ultimate_chat");
+  localStorage.removeItem("chat");
   render();
 }
 </script>
