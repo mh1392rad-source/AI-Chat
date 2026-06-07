@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
@@ -78,6 +79,18 @@ button{
   border-radius:8px;
   cursor:pointer;
 }
+
+footer{
+  text-align:center;
+  padding:15px;
+  background:#0f172a;
+  color:#aaa;
+  font-size:14px;
+}
+a{
+  color:#7c3aed;
+  text-decoration:none;
+}
 </style>
 
 </head>
@@ -85,7 +98,7 @@ button{
 <body>
 
 <div class="sidebar">
-<h3>⚡ Netlify AI</h3>
+<h3>⚡ AI Chat</h3>
 <button onclick="clearChat()">پاک کردن</button>
 </div>
 
@@ -98,6 +111,14 @@ button{
 <input id="txt" placeholder="پیام..." />
 <button onclick="send()">ارسال</button>
 </div>
+
+<footer>
+  👨‍💻 ساخته شده توسط <b>M Habibi rad</b><br>
+  <a href="https://eitaa.com/irandigital_python" target="_blank">
+    🔗 کانال ایتا ما
+  </a>
+</footer>
+
 </div>
 
 <script>
@@ -114,32 +135,28 @@ function render(){
 
 render();
 
-// 🧠 fake AI logic (هوشمند ساده)
+// AI ساده
 function fakeAI(text){
   text = text.toLowerCase();
 
-  if(text.includes("سلام")) return "سلام 👋 چطور می‌تونم کمکت کنم؟";
-  if(text.includes("اسم")) return "من یک AI ساده هستم 😄";
+  if(text.includes("سلام")) return "سلام 👋 خوش اومدی!";
+  if(text.includes("اسم")) return "من یک چت‌بات ساده هستم 😄";
   if(text.includes("خوبی")) return "من خوبم، تو چطوری؟";
-  if(text.includes("who") || text.includes("چی")) return "من یک چت‌بات ساده هستم که روی Netlify اجرا میشم ⚡";
 
-  return "متوجه شدم 👍 ولی برای پاسخ دقیق‌تر باید نسخه AI واقعی وصل بشه.";
+  return "فعلاً نسخه ساده هستم، بعداً AI واقعی اضافه میشه 🤖";
 }
 
-async function send(){
+function send(){
   const input=document.getElementById("txt");
   if(!input.value) return;
 
   messages.push({role:"user",content:input.value});
   render();
 
-  const userText = input.value;
-  input.value="";
+  let reply = fakeAI(input.value);
 
   let bot={role:"assistant",content:""};
   messages.push(bot);
-
-  let reply = fakeAI(userText);
 
   let i=0;
   let interval=setInterval(()=>{
@@ -152,6 +169,8 @@ async function send(){
       localStorage.setItem("chat",JSON.stringify(messages));
     }
   },15);
+
+  input.value="";
 }
 
 function clearChat(){
