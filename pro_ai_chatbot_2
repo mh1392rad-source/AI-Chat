@@ -1,1 +1,179 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>Pro AI Chatbot</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  background: #0b1220;
+  color: white;
+  margin: 0;
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 220px;
+  background: #0f172a;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar button {
+  margin-top: 10px;
+  padding: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 10px;
+  background: #111827;
+  text-align: center;
+}
+
+#chat {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.msg {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 70%;
+  white-space: pre-wrap;
+}
+
+.user {
+  background: #1d4ed8;
+  margin-left: auto;
+}
+
+.bot {
+  background: #16a34a;
+  margin-right: auto;
+}
+
+.input-box {
+  display: flex;
+  padding: 10px;
+  background: #111827;
+  gap: 10px;
+}
+
+input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+}
+
+button.send {
+  padding: 12px 20px;
+  background: #2563eb;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.typing {
+  opacity: 0.7;
+  font-style: italic;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h3>⚙️ کنترل</h3>
+  <button onclick="clearChat()">پاک کردن چت</button>
+</div>
+
+<div class="chat-container">
+  <div class="header">🤖 Pro AI Chatbot</div>
+
+  <div id="chat"></div>
+
+  <div class="input-box">
+    <input id="prompt" placeholder="پیام بنویس..." />
+    <button class="send" onclick="send()">ارسال</button>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://YOUR-VERCEL-URL.vercel.app/api/chat";
+
+let messages = JSON.parse(localStorage.getItem("chat") || "[]");
+
+function render() {
+  const chat = document.getElementById("chat");
+  chat.innerHTML = "";
+  messages.forEach(m => {
+    chat.innerHTML += `<div class="msg ${m.role === 'user' ? 'user':'bot'}">${m.content}</div>`;
+  });
+  chat.scrollTop = chat.scrollHeight;
+}
+
+render();
+
+async function send() {
+  const input = document.getElementById("prompt");
+  const text = input.value.trim();
+  if (!text) return;
+
+  messages.push({ role: "user", content: text });
+  render();
+  input.value = "";
+
+  const chat = document.getElementById("chat");
+  const typing = document.createElement("div");
+  typing.className = "msg bot typing";
+  typing.innerText = "در حال پاسخ...";
+  chat.appendChild(typing);
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ messages })
+    });
+
+    const data = await res.json();
+
+    typing.remove();
+
+    messages.push({ role: "assistant", content: data.reply });
+    localStorage.setItem("chat", JSON.stringify(messages));
+    render();
+
+  } catch (e) {
+    typing.innerText = "خطا در اتصال";
+  }
+}
+
+function clearChat() {
+  messages = [];
+  localStorage.removeItem("chat");
+  render();
+}
+</script>
+
+</body>
+</html>
 
