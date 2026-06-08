@@ -135,40 +135,45 @@ function render(){
 
 render();
 
-// AI ساده
-function fakeAI(text){
-  text = text.toLowerCase();
-
-  if(text.includes("سلام")) return "سلام 👋 خوش اومدی!";
-  if(text.includes("اسم")) return "من یک چت‌بات ساده هستم 😄";
-  if(text.includes("خوبی")) return "من خوبم، تو چطوری؟";
-
-  return "فعلاً نسخه ساده هستم، بعداً AI واقعی اضافه میشه 🤖";
-}
-
-function send(){
+async function send(){
   const input=document.getElementById("txt");
   if(!input.value) return;
 
   messages.push({role:"user",content:input.value});
   render();
 
-  let reply = fakeAI(input.value);
-
   let bot={role:"assistant",content:""};
   messages.push(bot);
+  render();
 
-  let i=0;
-  let interval=setInterval(()=>{
-    bot.content+=reply[i];
-    i++;
+  try {
+    // لینک فانکشن Netlify
+    const res = await fetch("https://mh1392rad-source.netlify.app/.netlify/functions/chat", {
+      method:"POST",
+      headers:{ "Content-Type": "application/json" },
+      body: JSON.stringify({ messages })
+    });
+
+    if(!res.ok) throw new Error("خطا در اتصال به سرور");
+
+    const data = await res.json();
+    const reply = data.reply || "پاسخی دریافت نشد.";
+
+    let i=0;
+    let interval=setInterval(()=>{
+      bot.content+=reply[i];
+      i++;
+      render();
+      if(i>=reply.length){
+        clearInterval(interval);
+        localStorage.setItem("chat",JSON.stringify(messages));
+      }
+    },15);
+
+  } catch(err) {
+    bot.content = "خطا: " + err.message;
     render();
-
-    if(i>=reply.length){
-      clearInterval(interval);
-      localStorage.setItem("chat",JSON.stringify(messages));
-    }
-  },15);
+  }
 
   input.value="";
 }
