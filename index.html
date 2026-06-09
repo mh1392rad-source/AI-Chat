@@ -1,105 +1,34 @@
 ﻿
-<!DOCTYPE html>
-<html lang="fa">
-<head>
-<meta charset="UTF-8">
-<title>AI Chat Stream</title>
-<style>
-body {
-    font-family: sans-serif;
-    background: #0b1220;
-    color: white;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-}
-#chat {
-    height: 400px;
-    overflow-y: auto;
-    border: 1px solid #333;
-    margin: 20px;
-    padding: 10px;
-    text-align: left;
-}
-input {
-    width: 70%;
-    padding: 10px;
-    font-size: 16px;
-}
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-}
-.msg {
-    margin: 5px 0;
-    padding: 8px;
-    border-radius: 8px;
-    max-width: 80%;
-    word-wrap: break-word;
-}
-.user {
-    background: #2563eb;
-    text-align: right;
-    margin-left: auto;
-}
-.ai {
-    background: #16a34a;
-    text-align: left;
-    margin-right: auto;
-}
-</style>
-</head>
-<body>
-
-<h2>⚡ AI Chat Stream</h2>
-
-<div id="chat"></div>
-
-<input id="input" placeholder="پیام..." />
-<button onclick="send()">ارسال</button>
-
 <script>
-const API_URL = "https://ai-chat.mh1392rad.workers.dev/";
-
 async function send() {
     const input = document.getElementById("input");
     const chat = document.getElementById("chat");
-
     if (!input.value) return;
 
     chat.innerHTML += `<div class="msg user">${input.value}</div>`;
-    const userMessage = input.value;
-    input.value = "";
-
     const aiDiv = document.createElement("div");
     aiDiv.className = "msg ai";
     chat.appendChild(aiDiv);
     chat.scrollTop = chat.scrollHeight;
 
-    const res = await fetch(API_URL, {
+    const res = await fetch("https://ai-chat.mh1392rad.workers.dev/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage })
+        body: JSON.stringify({ message: input.value })
     });
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let result = "";
-    
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        result += decoder.decode(value, { stream: true });
-        try {
-            const json = JSON.parse(result);
-            aiDiv.textContent = json.reply;
-        } catch(e) {
-            // incomplete chunk, صبر می‌کنیم تا کامل شود
-        }
+    const data = await res.json();
+    const text = data.reply;
+
+    // شبیه استریم: هر 30 کاراکتر یک بار اضافه شود
+    let i = 0;
+    const interval = setInterval(() => {
+        aiDiv.textContent += text.slice(i, i+30);
+        i += 30;
         chat.scrollTop = chat.scrollHeight;
-    }
+        if (i >= text.length) clearInterval(interval);
+    }, 50);
+
+    input.value = "";
 }
 </script>
-
-</body>
-</html>
