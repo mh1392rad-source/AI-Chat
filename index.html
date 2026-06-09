@@ -4,51 +4,16 @@
 <head>
 <meta charset="UTF-8">
 <title>AI Chat</title>
-
 <style>
-body {
-  font-family: sans-serif;
-  background: #0b1220;
-  color: white;
-  text-align: center;
-}
-
-#chat {
-  height: 400px;
-  overflow: auto;
-  border: 1px solid #333;
-  margin: 20px;
-  padding: 10px;
-}
-
-input {
-  width: 70%;
-  padding: 10px;
-}
-
-button {
-  padding: 10px;
-}
-
-.msg {
-  margin: 5px;
-  padding: 8px;
-  border-radius: 8px;
-}
-
-.user {
-  background: #2563eb;
-  text-align: right;
-}
-
-.ai {
-  background: #16a34a;
-  text-align: left;
-}
+body{font-family:sans-serif;background:#0b1220;color:white;text-align:center}
+#chat{height:400px;overflow:auto;border:1px solid #333;margin:20px;padding:10px}
+input{width:70%;padding:10px}
+button{padding:10px}
+.msg{margin:5px;padding:8px;border-radius:8px}
+.user{background:#2563eb;text-align:right}
+.ai{background:#16a34a;text-align:left}
 </style>
-
 </head>
-
 <body>
 
 <h2>⚡ AI Chat</h2>
@@ -60,29 +25,28 @@ button {
 
 <script>
 
-const API = "https://ai-chat.mh1392rad.workers.dev";
+const API_URL = "https://ai-chat.mh1392rad.workers.dev/"
 
-async function send() {
-  let input = document.getElementById("input");
-  let chat = document.getElementById("chat");
+async function send(){
+  let input=document.getElementById("input")
+  let chat=document.getElementById("chat")
 
-  if (!input.value) return;
+  if(!input.value) return
 
-  chat.innerHTML += `<div class="msg user">${input.value}</div>`;
+  chat.innerHTML += `<div class="msg user">${input.value}</div>`
 
-  let res = await fetch(API, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ message: input.value })
-  });
+  let res=await fetch(API_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:input.value})
+  })
 
-  let data = await res.json();
+  let data=await res.json()
 
-  chat.innerHTML += `<div class="msg ai">${data.reply}</div>`;
-  input.value = "";
-  chat.scrollTop = chat.scrollHeight;
+  chat.innerHTML += `<div class="msg ai">${data.reply}</div>`
+  input.value=""
+  chat.scrollTop=chat.scrollHeight
 }
-
 </script>
 
 </body>
