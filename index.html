@@ -3,100 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <title>AI Chat</title>
+
 <style>
-body {
-    font-family: sans-serif;
-    background: #0b1220;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    height: 100vh;
-    margin: 0;
-    padding: 20px;
-}
-h2 { margin-bottom: 10px; }
-#chat {
-    width: 90%;
-    max-width: 600px;
-    height: 70%;
-    overflow-y: auto;
-    border: 1px solid #333;
-    padding: 10px;
-    margin-bottom: 10px;
-    background: #1c1f2a;
-    border-radius: 8px;
-}
-input {
-    width: 70%;
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    outline: none;
-}
-button {
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    background: #2563eb;
-    color: white;
-    margin-left: 5px;
-}
-.msg {
-    margin: 5px 0;
-    padding: 8px;
-    border-radius: 8px;
-    word-wrap: break-word;
-}
-.user { background: #2563eb; text-align: right; }
-.ai { background: #16a34a; text-align: left; white-space: pre-wrap; }
+body { font-family:sans-serif; background:#0b1220; color:white; text-align:center; }
+#chat { width:90%; max-width:600px; height:400px; overflow:auto; border:1px solid #333; margin:20px auto; padding:10px; }
+.msg { margin:5px; padding:8px; border-radius:8px; }
+.user { background:#2563eb; text-align:right; }
+.ai { background:#16a34a; text-align:left; }
+input { width:70%; padding:10px; }
+button { padding:10px; }
+a { color:yellow; display:block; margin-top:20px; }
 </style>
 </head>
+
 <body>
 
 <h2>⚡ AI Chat</h2>
+
 <div id="chat"></div>
 
-<div>
-    <input id="input" placeholder="پیام..." />
-    <button onclick="send()">ارسال</button>
-</div>
+<input id="input" placeholder="پیام..." />
+<button onclick="send()">ارسال</button>
+
+<a href="https://eitaa.com/irandigital_python" target="_blank">
+📌 کانال ما در ایتا
+</a>
 
 <script>
-async function send() {
+const API = "https://ai-chat.mh1392rad.workers.dev/";
+
+async function send(){
     const input = document.getElementById("input");
     const chat = document.getElementById("chat");
-    if (!input.value) return;
 
-    // پیام کاربر
+    if(!input.value) return;
+
     chat.innerHTML += `<div class="msg user">${input.value}</div>`;
 
-    // بلوک پاسخ AI
-    const aiDiv = document.createElement("div");
-    aiDiv.className = "msg ai";
-    chat.appendChild(aiDiv);
-    chat.scrollTop = chat.scrollHeight;
-
-    // درخواست به Worker
-    const res = await fetch("https://ai-chat.mh1392rad.workers.dev/", {
+    const res = await fetch(API, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type":"application/json"},
         body: JSON.stringify({ message: input.value })
     });
 
     const data = await res.json();
-    const text = data.reply;
 
-    // شبیه‌سازی استریم: هر 30 کاراکتر یک بار
-    let i = 0;
-    const interval = setInterval(() => {
-        aiDiv.textContent += text.slice(i, i + 30);
-        i += 30;
-        chat.scrollTop = chat.scrollHeight;
-        if (i >= text.length) clearInterval(interval);
-    }, 50);
+    chat.innerHTML += `<div class="msg ai">${data.reply}</div>`;
+    chat.scrollTop = chat.scrollHeight;
 
     input.value = "";
 }
