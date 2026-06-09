@@ -3,20 +3,55 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>AI Chat</title>
+<title>AI Chat Stream</title>
 <style>
-body{font-family:sans-serif;background:#0b1220;color:white;text-align:center}
-#chat{height:400px;overflow:auto;border:1px solid #333;margin:20px;padding:10px}
-input{width:70%;padding:10px}
-button{padding:10px}
-.msg{margin:5px;padding:8px;border-radius:8px}
-.user{background:#2563eb;text-align:right}
-.ai{background:#16a34a;text-align:left}
+body {
+    font-family: sans-serif;
+    background: #0b1220;
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+#chat {
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    margin: 20px;
+    padding: 10px;
+    text-align: left;
+}
+input {
+    width: 70%;
+    padding: 10px;
+    font-size: 16px;
+}
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+}
+.msg {
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 8px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+.user {
+    background: #2563eb;
+    text-align: right;
+    margin-left: auto;
+}
+.ai {
+    background: #16a34a;
+    text-align: left;
+    margin-right: auto;
+}
 </style>
 </head>
 <body>
 
-<h2>⚡ AI Chat</h2>
+<h2>⚡ AI Chat Stream</h2>
 
 <div id="chat"></div>
 
@@ -24,28 +59,45 @@ button{padding:10px}
 <button onclick="send()">ارسال</button>
 
 <script>
+const API_URL = "https://ai-chat.mh1392rad.workers.dev/";
 
-const API_URL = "https://ai-chat.mh1392rad.workers.dev/"
+async function send() {
+    const input = document.getElementById("input");
+    const chat = document.getElementById("chat");
 
-async function send(){
-  let input=document.getElementById("input")
-  let chat=document.getElementById("chat")
+    if (!input.value) return;
 
-  if(!input.value) return
+    chat.innerHTML += `<div class="msg user">${input.value}</div>`;
+    const userMessage = input.value;
+    input.value = "";
 
-  chat.innerHTML += `<div class="msg user">${input.value}</div>`
+    const aiDiv = document.createElement("div");
+    aiDiv.className = "msg ai";
+    chat.appendChild(aiDiv);
+    chat.scrollTop = chat.scrollHeight;
 
-  let res=await fetch(API_URL,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({message:input.value})
-  })
+    const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage })
+    });
 
-  let data=await res.json()
-
-  chat.innerHTML += `<div class="msg ai">${data.reply}</div>`
-  input.value=""
-  chat.scrollTop=chat.scrollHeight
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let result = "";
+    
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        result += decoder.decode(value, { stream: true });
+        try {
+            const json = JSON.parse(result);
+            aiDiv.textContent = json.reply;
+        } catch(e) {
+            // incomplete chunk, صبر می‌کنیم تا کامل شود
+        }
+        chat.scrollTop = chat.scrollHeight;
+    }
 }
 </script>
 
