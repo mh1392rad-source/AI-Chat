@@ -3,93 +3,47 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>AI Chat Netlify</title>
+<title>AI Chat</title>
 
 <style>
-body{
-  margin:0;
-  font-family:sans-serif;
-  background:#0b1220;
-  color:white;
-  display:flex;
-  height:100vh;
+body {
+  font-family: sans-serif;
+  background: #0b1220;
+  color: white;
+  text-align: center;
 }
 
-.sidebar{
-  width:220px;
-  background:#0f172a;
-  padding:10px;
+#chat {
+  height: 400px;
+  overflow: auto;
+  border: 1px solid #333;
+  margin: 20px;
+  padding: 10px;
 }
 
-.chat{
-  flex:1;
-  display:flex;
-  flex-direction:column;
+input {
+  width: 70%;
+  padding: 10px;
 }
 
-.header{
-  padding:10px;
-  background:#111827;
-  text-align:center;
+button {
+  padding: 10px;
 }
 
-#box{
-  flex:1;
-  overflow:auto;
-  padding:15px;
+.msg {
+  margin: 5px;
+  padding: 8px;
+  border-radius: 8px;
 }
 
-.msg{
-  margin:10px;
-  padding:10px;
-  border-radius:10px;
-  max-width:70%;
-  white-space:pre-wrap;
+.user {
+  background: #2563eb;
+  text-align: right;
 }
 
-.user{
-  background:#2563eb;
-  margin-left:auto;
-}
-
-.bot{
-  background:#16a34a;
-  margin-right:auto;
-}
-
-.input{
-  display:flex;
-  padding:10px;
-  background:#111827;
-  gap:10px;
-}
-
-input{
-  flex:1;
-  padding:12px;
-  border-radius:8px;
-  border:none;
-}
-
-button{
-  padding:10px;
-  background:#7c3aed;
-  color:white;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-}
-
-footer{
-  text-align:center;
-  padding:15px;
-  background:#0f172a;
-  color:#aaa;
-  font-size:14px;
-}
-a{
-  color:#7c3aed;
-  text-decoration:none;
+.ai {
+  background: #16a34a;
+  text-align: left;
 }
 </style>
 
@@ -97,92 +51,38 @@ a{
 
 <body>
 
-<div class="sidebar">
-<h3>⚡ AI Chat</h3>
-<button onclick="clearChat()">پاک کردن</button>
-</div>
+<h2>⚡ AI Chat</h2>
 
-<div class="chat">
-<div class="header">🤖 AI Chat (Netlify Version)</div>
+<div id="chat"></div>
 
-<div id="box"></div>
-
-<div class="input">
-<input id="txt" placeholder="پیام..." />
+<input id="input" placeholder="پیام..." />
 <button onclick="send()">ارسال</button>
-</div>
-
-<footer>
-  👨‍💻 ساخته شده توسط <b>M Habibi rad</b><br>
-  <a href="https://eitaa.com/irandigital_python" target="_blank">
-    🔗 کانال ایتا ما
-  </a>
-</footer>
-
-</div>
 
 <script>
-let messages = JSON.parse(localStorage.getItem("chat") || "[]");
 
-function render(){
-  const box=document.getElementById("box");
-  box.innerHTML="";
-  messages.forEach(m=>{
-    box.innerHTML+=`<div class="msg ${m.role=='user'?'user':'bot'}">${m.content}</div>`;
+const API = "https://ai-chat.mh1392rad.workers.dev";
+
+async function send() {
+  let input = document.getElementById("input");
+  let chat = document.getElementById("chat");
+
+  if (!input.value) return;
+
+  chat.innerHTML += `<div class="msg user">${input.value}</div>`;
+
+  let res = await fetch(API, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ message: input.value })
   });
-  box.scrollTop=box.scrollHeight;
+
+  let data = await res.json();
+
+  chat.innerHTML += `<div class="msg ai">${data.reply}</div>`;
+  input.value = "";
+  chat.scrollTop = chat.scrollHeight;
 }
 
-render();
-
-async function send(){
-  const input=document.getElementById("txt");
-  if(!input.value) return;
-
-  messages.push({role:"user",content:input.value});
-  render();
-
-  let bot={role:"assistant",content:""};
-  messages.push(bot);
-  render();
-
-  try {
-    // لینک فانکشن Netlify
-    const res = await fetch("https://mh1392rad-source.netlify.app/.netlify/functions/chat", {
-      method:"POST",
-      headers:{ "Content-Type": "application/json" },
-      body: JSON.stringify({ messages })
-    });
-
-    if(!res.ok) throw new Error("خطا در اتصال به سرور");
-
-    const data = await res.json();
-    const reply = data.reply || "پاسخی دریافت نشد.";
-
-    let i=0;
-    let interval=setInterval(()=>{
-      bot.content+=reply[i];
-      i++;
-      render();
-      if(i>=reply.length){
-        clearInterval(interval);
-        localStorage.setItem("chat",JSON.stringify(messages));
-      }
-    },15);
-
-  } catch(err) {
-    bot.content = "خطا: " + err.message;
-    render();
-  }
-
-  input.value="";
-}
-
-function clearChat(){
-  messages=[];
-  localStorage.removeItem("chat");
-  render();
-}
 </script>
 
 </body>
